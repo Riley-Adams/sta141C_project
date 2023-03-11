@@ -49,19 +49,15 @@ def gibbs_bayesian(y, X, mu0, sig0, df0, psi0, niter):
         
         # Obtain new estimates of sigma^2
         df = df0 + n
-        colsums = np.empty((p, p), dtype = "float64")
+        rowsums = np.empty((p, p), dtype = "float64")
         for j in range(0, n):
-            colsums += (X[j,:] - proposal_beta) @ (X[j,:] - proposal_beta).T
-            break
-        psi = psi0 + colsums
-        print(psi)
+            diff = np.reshape((X[j,:] - proposal_beta), (p, 1))
+            rowsums += diff @ diff.T
+        psi = psi0 + rowsums
+        
         proposal_sigma = sp.stats.invwishart.rvs(df, psi)
-        #print(alpha)
-        #print(beta)
         
         # Set new value
-        #print(proposal_beta)
-        #print(proposal_sigma)
         beta_estimates[:,i] = proposal_beta
         sigma_estimates[:,:,i] = proposal_sigma
             
@@ -112,7 +108,7 @@ Beta = pd.read_csv("data/Betas.txt", header = None)
 Epsilon = pd.read_csv("data/err.txt", header = None)
 G = pd.read_csv("data/G.txt", header = None)
 
-X = np.array(X)[0:150,0:100]
+X = np.array(X)[0:150,0:200]
 Y = np.array(Y)[0:150].flatten()
 Beta = np.array(Beta)[0:100].flatten()
 Epsilon = np.array(Epsilon)[0:150].flatten()
@@ -120,10 +116,13 @@ G = np.array(G)[0:100,0:100]
 
 Beta_G = G @ Beta.T
 
-bayes_betas, bayes_sigmas = gibbs_bayesian(Y, X, np.zeros(100), np.identity(100), 0, np.identity(100), 10000)
+rand_psi = np.zeros((100,100))
+for i in range(0, 100):
+    rand_psi[:, i] = np.random.multivariate_normal(np.zeros(100), np.identity(100))
+psi_prior = np.identity(100) + rand_psi
+bayes_betas, bayes_sigmas = gibbs_bayesian(Y, X, Beta, np.identity(100), 0, np.identity(100), 10000)
 
 from sklearn.linear_model import LinearRegression
 
 model = LinearRegression()
 model.fit(X, Y)
-print(model.coef_)
