@@ -7,6 +7,7 @@ This is a temporary script file.
 
 import numpy as np
 import scipy as sp
+from scipy import stats
 import matplotlib.pyplot as plt
 import pandas as pd
 from tqdm import tqdm
@@ -35,16 +36,22 @@ def gibbs_bayesian(y, X, mu0, sig0, df0, psi0, niter):
     p = X.shape[1]
     x_bar = np.sum(X, 0) / p
     beta_estimates = np.empty((p, niter))
-    beta_estimates[:,0] = np.ones(p)
-    sigma_estimates = np.empty((p, p, niter))
-    sigma_estimates[:,:,0] = np.identity(p)
+    beta_estimates[:,0] = np.zeros(p)
+    #sigma_estimates = np.empty((p, p, niter))
+    #sigma_estimates[:,:,0] = np.identity(p)
+    sigma_estimates = np.empty(niter)
+    sigma_estimates[0] = 1
     
     for i in tqdm(range(1, niter)):
-        sigma_current = sigma_estimates[:,:,i-1]
+        #sigma_current = sigma_estimates[:,:,i-1]
+        sigma_current = sigma_estimates[0]
         
         # Obtain new estimates of betas
-        sig = np.linalg.inv(np.identity(p) + n*np.linalg.inv(sigma_current))
-        mu = sig@(np.identity(p)@mu0 + n*np.linalg.inv(sigma_current)@x_bar)
+        #sig = np.linalg.inv(np.identity(p) + n*np.linalg.inv(sigma_current))
+        #mu = sig@(np.identity(p)@mu0 + n*np.linalg.inv(sigma_current)@x_bar)
+        mu = np.linalg.inv(X.T@X)@X.T@y
+        sig = sigma_current*np.linalg.inv(X.T@X)
+        
         proposal_beta = np.random.multivariate_normal(mu, sig)
         
         # Obtain new estimates of sigma^2
@@ -55,11 +62,16 @@ def gibbs_bayesian(y, X, mu0, sig0, df0, psi0, niter):
             rowsums += diff @ diff.T
         psi = psi0 + rowsums
         
-        proposal_sigma = sp.stats.invwishart.rvs(df, psi)
+        diff = np.reshape(y - X @ proposal_beta, (n, 1))
+        rate = diff.T @ diff / 2
+        
+        #proposal_sigma = sp.stats.invwishart.rvs(df, psi)
+        proposal_sigma = stats.invgamma.rvs(n/2, scale = rate)
         
         # Set new value
         beta_estimates[:,i] = proposal_beta
-        sigma_estimates[:,:,i] = proposal_sigma
+        #sigma_estimates[:,:,i] = proposal_sigma
+        sigma_estimates[i] = proposal_sigma
             
     return beta_estimates, sigma_estimates
 
@@ -107,14 +119,15 @@ Y = pd.read_csv("data/Y.txt", header = None)
 Beta = pd.read_csv("data/Betas.txt", header = None)
 Epsilon = pd.read_csv("data/err.txt", header = None)
 G = pd.read_csv("data/G.txt", header = None)
+sig2 = pd.read_csv("data/sig2", header = None)
 
-X = np.array(X)[0:150,0:200]
-Y = np.array(Y)[0:150].flatten()
-Beta = np.array(Beta)[0:100].flatten()
-Epsilon = np.array(Epsilon)[0:150].flatten()
-G = np.array(G)[0:100,0:100]
+X = np.array(X)#[0:150,0:100]
+Y = np.array(Y).flatten()#[0:150].flatten()
+Beta = np.array(Beta).flatten()#[0:100].flatten()
+Epsilon = np.array(Epsilon).flatten()#[0:150].flatten()
+G = np.array(G).flatten()#[0:100,0:100]
 
-Beta_G = G @ Beta.T
+#Beta_G = G @ Beta.T
 
 rand_psi = np.zeros((100,100))
 for i in range(0, 100):
