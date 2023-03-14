@@ -37,40 +37,25 @@ def gibbs_bayesian(y, X, mu0, sig0, df0, psi0, niter):
     x_bar = np.sum(X, 0) / p
     beta_estimates = np.empty((p, niter))
     beta_estimates[:,0] = np.zeros(p)
-    #sigma_estimates = np.empty((p, p, niter))
-    #sigma_estimates[:,:,0] = np.identity(p)
     sigma_estimates = np.empty(niter)
     sigma_estimates[0] = 1
+    beta_hat = np.linalg.inv(X.T@X)@X.T@y
+    XtXinv = np.linalg.inv(X.T@X)
     
     for i in tqdm(range(1, niter)):
-        #sigma_current = sigma_estimates[:,:,i-1]
-        sigma_current = sigma_estimates[0]
+        sigma_current = sigma_estimates[i-1]
         
         # Obtain new estimates of betas
-        #sig = np.linalg.inv(np.identity(p) + n*np.linalg.inv(sigma_current))
-        #mu = sig@(np.identity(p)@mu0 + n*np.linalg.inv(sigma_current)@x_bar)
-        mu = np.linalg.inv(X.T@X)@X.T@y
-        sig = sigma_current*np.linalg.inv(X.T@X)
-        
+        mu = beta_hat
+        sig = sigma_current*XtXinv
         proposal_beta = np.random.multivariate_normal(mu, sig)
         
         # Obtain new estimates of sigma^2
-        df = df0 + n
-        rowsums = np.empty((p, p), dtype = "float64")
-        for j in range(0, n):
-            diff = np.reshape((X[j,:] - proposal_beta), (p, 1))
-            rowsums += diff @ diff.T
-        psi = psi0 + rowsums
-        
         diff = np.reshape(y - X @ proposal_beta, (n, 1))
-        rate = diff.T @ diff / 2
-        
-        #proposal_sigma = sp.stats.invwishart.rvs(df, psi)
-        proposal_sigma = stats.invgamma.rvs(n/2, scale = rate)
+        proposal_sigma = stats.invgamma.rvs(n/2, scale = diff.T @ diff / 2)
         
         # Set new value
         beta_estimates[:,i] = proposal_beta
-        #sigma_estimates[:,:,i] = proposal_sigma
         sigma_estimates[i] = proposal_sigma
             
     return beta_estimates, sigma_estimates
@@ -127,12 +112,6 @@ Beta = np.array(Beta).flatten()#[0:100].flatten()
 Epsilon = np.array(Epsilon).flatten()#[0:150].flatten()
 G = np.array(G).flatten()#[0:100,0:100]
 
-#Beta_G = G @ Beta.T
-
-rand_psi = np.zeros((100,100))
-for i in range(0, 100):
-    rand_psi[:, i] = np.random.multivariate_normal(np.zeros(100), np.identity(100))
-psi_prior = np.identity(100) + rand_psi
 bayes_betas, bayes_sigmas = gibbs_bayesian(Y, X, Beta, np.identity(100), 0, np.identity(100), 10000)
 
 from sklearn.linear_model import LinearRegression
