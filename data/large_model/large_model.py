@@ -5,7 +5,7 @@ import numpy as np
 rng = np.random.default_rng(141)
 
 # define n, p
-n = 1500
+n = 1050
 p = 1000
 
 ## generate G
