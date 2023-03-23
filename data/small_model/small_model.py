@@ -40,6 +40,6 @@ e = rng.normal(0,9,n)
 y = X @ betas[:, None] + e[:, None]
 
 # Save data.
-np.savetxt('data/small_model/betas.txt', betas, delimiter=',')
-np.savetxt('data/small_model/X.txt', X, delimiter=',')
-np.savetxt('data/small_model/y.txt', y, delimiter=',')
+np.savetxt('betas.txt', betas, delimiter=',')
+np.savetxt('X.txt', X, delimiter=',')
+np.savetxt('y.txt', y, delimiter=',')

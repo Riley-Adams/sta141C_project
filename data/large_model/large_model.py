@@ -23,19 +23,14 @@ betas_means = rng.uniform(-10,10,p)
 
 # draw betas
 betas = rng.multivariate_normal(betas_means, betas_cov)
-## ------------------------------------------------------
 
 ## generate X (n rows, p columns)
 X = rng.uniform(0,100,(n,p))
-## ------------------------------
 
 ## generate error terms
 
-# sigma^2
-sig2 = rng.gamma(shape=1)
-
 # covariance matrix
-err_cov = sig2 * np.identity(n)
+err_cov = 25 * np.identity(n)
 
 # means vector
 err_mean = np.zeros(n)
@@ -48,11 +43,10 @@ err = rng.multivariate_normal(err_mean, err_cov)
 Y = X @ (G @ betas) + err
 
 # store simulated data
-np.savetxt('data/large_model/G.txt', G, delimiter=',')
-np.savetxt('data/large_model/betas.txt', betas, delimiter=',')
-np.savetxt('data/large_model/X.txt', X, delimiter=',')
-np.savetxt('data/large_model/err.txt', err, delimiter=',')
-np.savetxt('data/large_model/Y.txt', Y, delimiter=',')
-np.savetxt('data/large_model/sig2', np.array(sig2).ravel(), delimiter=',')
-np.savetxt('data/large_model/betas_cov', betas_cov, delimiter=',')
-np.savetxt('data/large_model/betas_means', betas_means, delimiter=',')
+np.savetxt('G.txt', G, delimiter=',')
+np.savetxt('betas.txt', betas, delimiter=',')
+np.savetxt('X.txt', X, delimiter=',')
+np.savetxt('err.txt', err, delimiter=',')
+np.savetxt('Y.txt', Y, delimiter=',')
+np.savetxt('betas_cov.txt', betas_cov, delimiter=',')
+np.savetxt('betas_means.txt', betas_means, delimiter=',')
