@@ -61,6 +61,7 @@ class Gsblr:
         assert burn_prop > 0 and burn_prop < 1
         self.burn_prop = burn_prop
         self.samples = None
+        self.burn_samples = None
         self.coef = None
         self.rng = np.random.default_rng(seed=rseed)
         np.random.seed(seed=rseed)
@@ -76,12 +77,18 @@ class Gsblr:
         
         # Compute number of iterations to burn.
         burn_num = int(np.floor(self.samples.shape[0] * self.burn_prop))
+        # Store samples after burn removed.
+        self.burn_samples = self.samples.iloc[burn_num:]
         # Compute coefficients.
         self.coef = self.samples.iloc[burn_num:].mean(axis=0)
     
-    def get_samples(self, var=False):
-        if not var:
+    def get_samples(self, var=False, remove_burn=True):
+        if not var and remove_burn:
+            return self.burn_samples.iloc[:,:-1]
+        elif not var and not remove_burn:
             return self.samples.iloc[:,:-1]
+        elif var and remove_burn:
+            return self.burn_samples
         else:
             return self.samples
     
