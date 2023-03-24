@@ -42,7 +42,7 @@ def sampler(betas = betas, n = n):
     # Generate y.
     y = X @ betas[:, None] + e[:, None]
 
-
+    # output X,y
     return X, y
 
 # Generate training, testing data.
