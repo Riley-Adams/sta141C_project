@@ -11,7 +11,7 @@ p = 1000
 ## generate G
 # a matrix with 1's and 0's on diag
 # 0's make corresponding betas insignificant
-G = np.diag(rng.binomial(n=1, p=0.7, size=p))
+G = np.diag(rng.binomial(n=1, p=0.5, size=p))
 
 ## generate betas (vector of length p)
 

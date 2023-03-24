@@ -22,24 +22,36 @@ p = 6
 # Define betas.
 betas = np.array([7, 1, 0, 4, 3, 0])
 
-# sample each x vector.
-x1 = rng.uniform(0,30,n)
-x2 = rng.uniform(20,50,n)
-x3 = rng.uniform(15,18,n)
-x4 = rng.uniform(0,50,n)
-x5 = rng.uniform(0,10,n)
-x6 = rng.uniform(25,27,n)
+# Function to sample x, y.
+def sampler(betas = betas, n = n):
 
-# Concatenate x vectors into X matrix.
-X = np.column_stack((x1, x2, x3, x4, x5, x6))
+    # sample each x vector.
+    x1 = rng.uniform(0,30,n)
+    x2 = rng.uniform(20,50,n)
+    x3 = rng.uniform(15,18,n)
+    x4 = rng.uniform(0,50,n)
+    x5 = rng.uniform(0,10,n)
+    x6 = rng.uniform(25,27,n)
 
-# Sample epsilon.
-e = rng.normal(0,9,n)
+    # Concatenate x vectors into X matrix.
+    X = np.column_stack((x1, x2, x3, x4, x5, x6))
 
-# Generate y.
-y = X @ betas[:, None] + e[:, None]
+    # Sample epsilon.
+    e = rng.normal(0,9,n)
+
+    # Generate y.
+    y = X @ betas[:, None] + e[:, None]
+
+
+    return X, y
+
+# Generate training, testing data.
+X_train, y_train = sampler()
+X_test, y_test = sampler()
 
 # Save data.
-np.savetxt('betas.txt', betas, delimiter=',')
-np.savetxt('X.txt', X, delimiter=',')
-np.savetxt('y.txt', y, delimiter=',')
+np.savetxt('data/small_model/betas.txt', betas, delimiter=',')
+np.savetxt('data/small_model/X_train.txt', X_train, delimiter=',')
+np.savetxt('data/small_model/y_train.txt', y_train, delimiter=',')
+np.savetxt('data/small_model/X_test.txt', X_test, delimiter=',')
+np.savetxt('data/small_model/y_test.txt', y_test, delimiter=',')
